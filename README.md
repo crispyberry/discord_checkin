@@ -78,28 +78,28 @@ pip install -r requirements.txt
 
 ```sql
 -- 创建签到记录表
-CREATE TABLE user_sign_ins (
+CREATE TABLE user_check_ins (
     id BIGSERIAL PRIMARY KEY,
     user_id TEXT NOT NULL,
     username TEXT NOT NULL,
     guild_id TEXT,
-    sign_in_time TIMESTAMPTZ NOT NULL,
+    check_in_time TIMESTAMPTZ NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 -- 创建索引以提升性能
-CREATE INDEX user_id_idx ON user_sign_ins(user_id);
-CREATE INDEX sign_in_time_idx ON user_sign_ins(sign_in_time);
-CREATE INDEX guild_id_idx ON user_sign_ins(guild_id);
+CREATE INDEX user_id_idx ON user_check_ins(user_id);
+CREATE INDEX check_in_time_idx ON user_check_ins(check_in_time);
+CREATE INDEX guild_id_idx ON user_check_ins(guild_id);
 
 -- 启用行级安全
-ALTER TABLE user_sign_ins ENABLE ROW LEVEL SECURITY;
+ALTER TABLE user_check_ins ENABLE ROW LEVEL SECURITY;
 
 -- 创建访问策略
-CREATE POLICY "Allow insert for authenticated users" ON user_sign_ins
+CREATE POLICY "Allow insert for authenticated users" ON user_check_ins
     FOR INSERT WITH CHECK (true);
 
-CREATE POLICY "Allow select for authenticated users" ON user_sign_ins
+CREATE POLICY "Allow select for authenticated users" ON user_check_ins
     FOR SELECT USING (true);
 ```
 

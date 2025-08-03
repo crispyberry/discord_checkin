@@ -35,7 +35,7 @@ def get_user_stats(user_id):
     """
     try:
         # Get all user check-ins ordered by date
-        result = supabase.table('user_sign_ins').select('*').eq('user_id', user_id).order('sign_in_time').execute()
+        result = supabase.table('user_check_ins').select('*').eq('user_id', user_id).order('check_in_time').execute()
         
         if not result.data:
             return 0, 0  # total_credits, consecutive_days
@@ -45,7 +45,7 @@ def get_user_stats(user_id):
         for record in result.data:
             try:
                 # Handle different datetime formats
-                time_str = record['sign_in_time']
+                time_str = record['check_in_time']
                 print(f"Debug: Parsing time string: {time_str}")
                 
                 # Remove microseconds if present and handle timezone
@@ -146,7 +146,7 @@ async def blast(interaction: discord.Interaction):
         today = date.today().isoformat()
         
         # Check if user already checked in today
-        result = supabase.table('user_sign_ins').select('*').eq('user_id', user_id).gte('sign_in_time', f'{today}T00:00:00').execute()
+        result = supabase.table('user_check_ins').select('*').eq('user_id', user_id).gte('check_in_time', f'{today}T00:00:00').execute()
         
         if result.data:
             await interaction.response.send_message(f'⚠️ **{username}** You have already checked in today! Come back tomorrow~')
@@ -157,7 +157,7 @@ async def blast(interaction: discord.Interaction):
         
         # Check if yesterday was checked in to determine new consecutive days
         yesterday = (date.today() - timedelta(days=1)).isoformat()
-        yesterday_result = supabase.table('user_sign_ins').select('*').eq('user_id', user_id).gte('sign_in_time', f'{yesterday}T00:00:00').lt('sign_in_time', f'{today}T00:00:00').execute()
+        yesterday_result = supabase.table('user_check_ins').select('*').eq('user_id', user_id).gte('check_in_time', f'{yesterday}T00:00:00').lt('check_in_time', f'{today}T00:00:00').execute()
         
         if yesterday_result.data:
             # Consecutive check-in
@@ -173,10 +173,10 @@ async def blast(interaction: discord.Interaction):
         data = {
             'user_id': user_id,
             'username': username,
-            'sign_in_time': datetime.now().isoformat()
+            'check_in_time': datetime.now().isoformat()
         }
         
-        supabase.table('user_sign_ins').insert(data).execute()
+        supabase.table('user_check_ins').insert(data).execute()
         
         # Create response embed
         embed = discord.Embed(
@@ -205,7 +205,7 @@ async def credit(interaction: discord.Interaction):
         total_credits, consecutive_days = get_user_stats(user_id)
         
         # Also check if user has any check-ins at all
-        result = supabase.table('user_sign_ins').select('*').eq('user_id', user_id).execute()
+        result = supabase.table('user_check_ins').select('*').eq('user_id', user_id).execute()
         has_checkins = len(result.data) > 0
         
         if not has_checkins:
@@ -256,7 +256,7 @@ async def debug(interaction: discord.Interaction):
         user_id = str(interaction.user.id)
         
         # Get raw data
-        result = supabase.table('user_sign_ins').select('*').eq('user_id', user_id).order('sign_in_time').execute()
+        result = supabase.table('user_check_ins').select('*').eq('user_id', user_id).order('check_in_time').execute()
         
         debug_info = f"**Debug Info for {interaction.user.name}**\n"
         debug_info += f"User ID: {user_id}\n"
@@ -265,7 +265,7 @@ async def debug(interaction: discord.Interaction):
         if result.data:
             debug_info += "**Raw Records:**\n"
             for i, record in enumerate(result.data):
-                debug_info += f"{i+1}. {record['sign_in_time']}\n"
+                debug_info += f"{i+1}. {record['check_in_time']}\n"
             
             # Test the calculation
             total_credits, consecutive_days = get_user_stats(user_id)
