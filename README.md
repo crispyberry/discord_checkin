@@ -1,4 +1,221 @@
-# Discord 签到机器人 (Discord Sign-in Bot)
+# Discord Check-in Bot
+
+*Language / 语言: [English](#english) | [中文](#中文)*
+
+---
+
+## English
+
+A Discord bot that allows users to perform daily check-ins using the `/blast` command and automatically saves check-in information to a database.
+
+## 🎯 What can this bot do?
+
+- **Check-in functionality**: Users can check in on Discord using `/blast` command
+- **Auto recording**: Automatically saves username, ID, and check-in time to cloud database
+- **Status checking**: Use `/credit` command to check your credits and consecutive days
+- **Beautiful interface**: All responses use attractive Discord embed messages
+
+## 📋 Prerequisites
+
+Before getting started, you'll need:
+
+1. **A computer** - Windows, Mac, or Linux
+2. **Discord account** - To create the bot
+3. **Internet connection** - To download files and connect to services
+
+## 🚀 Installation Steps
+
+### Step 1: Install Python
+
+If Python isn't installed on your computer:
+
+1. Visit [python.org](https://www.python.org/downloads/)
+2. Download the latest Python version
+3. During installation, **make sure to check** "Add Python to PATH"
+4. After installation, open Command Prompt (Windows) or Terminal (Mac/Linux)
+5. Type `python --version` to confirm successful installation
+
+### Step 2: Download Bot Code
+
+1. Download all project files to your computer
+2. Extract to an easily accessible folder (e.g., Desktop)
+
+### Step 3: Install Dependencies
+
+1. Open Command Prompt or Terminal
+2. Navigate to the bot folder (using `cd` command)
+3. Run the following command to install required components:
+
+```bash
+pip install -r requirements.txt
+```
+
+This command automatically downloads all components needed for the bot.
+
+### Step 4: Create Discord Bot
+
+1. Visit [Discord Developer Portal](https://discord.com/developers/applications)
+2. Click "New Application"
+3. Give your bot a name, like "Check-in Bot"
+4. Click "Bot" in the left sidebar
+5. Click "Add Bot"
+6. Copy the bot's Token - **This is important, don't share it with anyone!**
+7. Under "Privileged Gateway Intents", enable all permissions
+8. Click "OAuth2" > "URL Generator" in the left sidebar
+9. In "Scopes", select "bot"
+10. In "Bot Permissions", select:
+    - Send Messages
+    - Use Slash Commands
+    - Read Message History
+    - Embed Links
+11. Copy the generated link, open it in your browser, and add the bot to your Discord server
+
+### Step 5: Set up Database (Supabase)
+
+1. Visit [supabase.com](https://supabase.com) and create a free account
+2. Click "New Project"
+3. Fill in project name and password
+4. Wait for project creation (about 2 minutes)
+5. On the project homepage, find and copy:
+   - Project URL
+   - anon public key
+6. Click "SQL Editor" in the left sidebar
+7. Copy and paste the following code, then click "Run":
+
+```sql
+-- Create check-in records table
+CREATE TABLE user_check_ins (
+    id BIGSERIAL PRIMARY KEY,
+    user_id TEXT NOT NULL,
+    username TEXT NOT NULL,
+    guild_id TEXT,
+    check_in_time TIMESTAMPTZ NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Create indexes for performance
+CREATE INDEX user_id_idx ON user_check_ins(user_id);
+CREATE INDEX check_in_time_idx ON user_check_ins(check_in_time);
+CREATE INDEX guild_id_idx ON user_check_ins(guild_id);
+
+-- Enable row level security
+ALTER TABLE user_check_ins ENABLE ROW LEVEL SECURITY;
+
+-- Create access policies
+CREATE POLICY "Allow insert for authenticated users" ON user_check_ins
+    FOR INSERT WITH CHECK (true);
+
+CREATE POLICY "Allow select for authenticated users" ON user_check_ins
+    FOR SELECT USING (true);
+```
+
+### Step 6: Configure Bot
+
+1. In the bot folder, find the `config_example.py` file
+2. Copy this file and rename it to `config.py`
+3. Open `config.py` with a text editor (Notepad works)
+4. Replace the following information with your actual data:
+
+```python
+# Discord bot configuration
+DISCORD_TOKEN = "Your Discord bot Token here"
+DISCORD_GUILD_ID = "Your Discord server ID here"
+
+# Supabase database configuration
+SUPABASE_URL = "Your Supabase project URL here"
+SUPABASE_KEY = "Your Supabase public key here"
+```
+
+**How to get Discord Server ID:**
+1. In Discord, right-click your server name
+2. Click "Copy Server ID" (if you don't see this option, enable Developer Mode in Discord settings first)
+
+### Step 7: Start the Bot
+
+1. In Command Prompt or Terminal, make sure you're in the bot folder
+2. Run the following command to start the bot:
+
+```bash
+python bot.py
+```
+
+If everything is working correctly, you'll see a message like "Bot connected".
+
+## 🎮 How to Use the Bot
+
+After the bot starts, you can use the following commands in your Discord server:
+
+### Available Commands:
+
+- **`/blast`** - Daily check-in, your information will be automatically recorded in the database
+- **`/credit`** - Check your total credits and consecutive check-in days
+
+### Usage Example:
+
+1. Type `/blast` in any chat channel
+2. The bot will reply with a beautiful check-in confirmation message
+3. Your check-in information (username, time, etc.) will be automatically saved to the cloud database
+
+## 📊 Database Information Recorded
+
+Each time a user checks in, the system automatically records:
+
+- **User ID**: Discord's unique user identifier
+- **Username**: Your display name in Discord
+- **Server ID**: The Discord server where the check-in occurred
+- **Check-in time**: Exact moment of check-in (including date and time)
+- **Record creation time**: When data was saved to the database
+
+## ❓ Troubleshooting
+
+### Bot won't start?
+
+1. **Check Python installation**: Type `python --version` in command line
+2. **Check component installation**: Confirm you've run `pip install -r requirements.txt`
+3. **Check config file**: Confirm `config.py` exists and information is correct
+
+### Bot not responding to commands?
+
+1. **Check bot permissions**: Confirm bot has send message permissions in the server
+2. **Check command format**: Use `/blast` not `$blast`
+3. **Check console**: The command line window where the bot runs will show error messages
+
+### Database connection failed?
+
+1. **Check Supabase configuration**: Confirm URL and key are copied correctly
+2. **Check internet connection**: Confirm your computer can access the internet
+3. **Check database tables**: Confirm you've created the necessary tables in Supabase
+
+## 🔒 Security Notes
+
+- **Protect your Token**: Discord bot Token is like a password, never share it with others
+- **Data security**: All check-in data is protected using Supabase's security system
+- **Privacy protection**: Bot only records basic check-in information, no other personal data
+
+## 💡 Technical Notes
+
+- Developed using Python programming language
+- Built on discord.py library
+- Uses Supabase as cloud database
+- Supports Slash Commands
+- Includes comprehensive error handling
+
+## 🆘 Need Help?
+
+If you encounter any issues:
+
+1. **Double-check**: Re-read the relevant steps, confirm each step is completed correctly
+2. **Check error messages**: Red text in the command line window usually contains problem hints
+3. **Try restarting**: Sometimes restarting the bot can solve temporary issues
+4. **Seek help**: Ask experienced friends or post questions in relevant communities
+
+## 📝 License
+
+This project uses the MIT open source license, you can freely use, modify, and share it.
+
+---
+
+## 中文
 
 这是一个 Discord 机器人，可以让用户使用 `/blast` 命令进行签到，并将签到信息自动保存到数据库中。
 
@@ -6,7 +223,7 @@
 
 - **签到功能**: 用户在 Discord 中输入 `/blast` 就能签到
 - **自动记录**: 自动保存用户的姓名、ID 和签到时间到云端数据库
-- **状态检查**: 使用 `/credit` 命令查看机器人是否正常工作
+- **状态检查**: 使用 `/credit` 命令查看你的积分和连续签到天数
 - **美观界面**: 所有回复都使用漂亮的 Discord 消息卡片
 
 ## 📋 安装前准备
@@ -142,7 +359,7 @@ python bot.py
 ### 可用命令：
 
 - **`/blast`** - 进行签到，您的信息会被自动记录到数据库
-- **`/credit`** - 检查机器人状态，确认一切正常工作
+- **`/credit`** - 检查您的总积分和连续签到天数
 
 ### 使用示例：
 
@@ -205,4 +422,4 @@ python bot.py
 
 ## 📝 许可证
 
-本项目采用 MIT 开源许可证，您可以自由使用、修改和分享。 
+本项目采用 MIT 开源许可证，您可以自由使用、修改和分享。
